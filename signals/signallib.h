@@ -17,26 +17,7 @@ extern int old_ppid;
 void parent_func (pid_t cpid);
 void child_func (char *filename);
 
-void handler (int num){
-
-	if (num == SIGUSR1)
-		transfer_bit = 1;
-	else
-		transfer_bit = 0;
-	return;
-}
-
-void sigchild (int num){
-	printf ("Parent has recieved SIGCHLD\n");
-	exit (EXIT_FAILURE);
-}
-
-void child_handler (int num){
-	return;
-}
-
-void child_hup (int num){
-	if (old_ppid != getppid())
-		printf("child recieved SIGHUP(parent has died)");
-	exit (EXIT_FAILURE);
-}
+void handler (int num);
+void sigchild (int num);
+void child_handler (int num);
+void child_hup (int num);
