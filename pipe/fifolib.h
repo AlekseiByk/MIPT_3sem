@@ -22,3 +22,11 @@ char * make_fifo_name (pid_t pid)
 
 	return fifo;
 }
+
+
+void CheckError(int Expression, char * messege){
+	if (Expression){
+		perror (messege);
+		exit (EXIT_FAILURE);
+	}
+}

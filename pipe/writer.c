@@ -3,7 +3,7 @@
 int main (int argc, char **argv) 
 {
 	if ((argc < 2) || (argc > 2)){
-		perror ("not right program start\n./writer <file>\n");
+		printf ("not right program start\n./writer <file>\n");
 		exit (1);
 	}
 
@@ -16,27 +16,17 @@ int main (int argc, char **argv)
 	}
 
 	int input = open (argv[1], O_RDONLY);
-	if (input < 0){
-		perror ("something wrong with file opening");
-		exit (1);
-	}
+	CheckError(input < 0, "something wrong with file opening");
 
 	int ret = mkfifo(fifo_service, 00600);
-    if (ret < 0 && errno != EEXIST)
-    {
-		perror("Creation transfer error(not EEXIST)\n");
-		exit(EXIT_FAILURE);
-    }
+	CheckError(ret < 0 && errno != EEXIST, "Creation transfer error(not EEXIST)\n");
+
     
     int service = open (fifo_service, O_RDONLY);
-    if (service < 0){
-		perror ("error with transfer fifo open");
-		return 1;
-	}
-
-	printf("%d\n", service);
+    CheckError(service < 0, "error with transfer fifo open");
 
 	char * fifo = (char *) calloc (fifo_name_len, sizeof(char));
+
 	if (!fifo){
 		printf ("error with fifo name calloc");
 		return 1;
@@ -46,39 +36,26 @@ int main (int argc, char **argv)
 		perror ("Something wrong with pid transfer\n");
 		exit (EXIT_FAILURE);
 	}
+	//sleep (5);
 
 	int transfer = open (fifo, O_WRONLY | O_NONBLOCK);
-	if (transfer < 0){
-		perror ("error with transfer fifo open");
-		return 1;
-	}
+	CheckError(transfer < 0, "error with transfer fifo open");
 
 	ret = fcntl(transfer, F_SETFL, O_WRONLY);
-	if (ret == -1){
-		perror("error with fcntl");
-		exit (EXIT_FAILURE);
-	}
+	CheckError(ret == -1, "error with fcntl");
 
 	free (fifo);
-	sleep(5);
+	//sleep(5);
 
 	errno = 0;
 	int count = 0;
 	while ((count = read (input, buffer, buf_size)) > 0){
-		if (count == -1){
-			perror("read from file error");
-			exit(EXIT_FAILURE);
-		}
+		CheckError(count == -1, "read from file error");
 
 		count = write (transfer, buffer, count);
-		if (count <= 0 && errno == EPIPE){
-			perror("Died transfer fifo");
-			exit(EXIT_FAILURE);
-		}
-		if (count < 0){
-			perror("write to fifo failure");
-			exit(EXIT_FAILURE);
-		}
+		CheckError(count <= 0 && errno == EPIPE, "Died transfer fifo");
+		CheckError(count < 0, "write to fifo failure");
+
 		sleep(1);
 	}
 
