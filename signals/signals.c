@@ -120,7 +120,7 @@ void parent_func (pid_t cpid){
         exit (EXIT_FAILURE);
     }
 
-    reciever_usr.sa_flags = SA_NODEFER;
+    reciever_usr.sa_flags = 0;
     reciever_usr.sa_handler = handler;
 
 	ret = sigaction (SIGUSR1, &reciever_usr, NULL);
@@ -148,7 +148,7 @@ void parent_func (pid_t cpid){
         exit (EXIT_FAILURE);
     }
 
-    child.sa_flags = SA_NOCLDWAIT;
+    child.sa_flags = 0;
 	child.sa_handler = sigchild;
 
 	ret = sigaction (SIGCHLD, &child, NULL);
