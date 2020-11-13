@@ -14,6 +14,9 @@
 extern int transfer_bit;
 extern int old_ppid;
 
+void parent_func (pid_t cpid);
+void child_func (char *filename);
+
 void handler (int num){
 
 	if (num == SIGUSR1)
@@ -33,7 +36,7 @@ void child_handler (int num){
 }
 
 void child_hup (int num){
-	if (oldppid != getppid())
+	if (old_ppid != getppid())
 		printf("child recieved SIGHUP(parent has died)");
 	exit (EXIT_FAILURE);
 }

@@ -3,9 +3,6 @@
 int transfer_bit = 0;
 int old_ppid = 0;
 
-void parent_func (pid_t cpid);
-void child_func (char *filename);
-
 int main (int argc, char ** argv) 
 {
 	if ((argc < 2) || (argc > 2)){
@@ -48,13 +45,6 @@ int main (int argc, char ** argv)
         exit (EXIT_FAILURE);
     }
 
-    ret = sigaddset (&start_set, SIGALRM);
-    if (ret < 0)
-    {
-        perror ("add alarm start mask error");
-        exit (EXIT_FAILURE);
-    }
-
     ret = sigaddset (&start_set, SIGHUP);
     if (ret < 0)
     {
@@ -89,7 +79,35 @@ int main (int argc, char ** argv)
 
 	return 0;
 }
+
 //------------------------------------------------------------------------
+
+void handler (int num){
+
+    if (num == SIGUSR1)
+        transfer_bit = 1;
+    else
+        transfer_bit = 0;
+    return;
+}
+
+void sigchild (int num){
+    printf ("Parent has recieved SIGCHLD\n");
+    exit (EXIT_FAILURE);
+}
+
+void child_handler (int num){
+    return;
+}
+
+void child_hup (int num){
+    if (old_ppid != getppid())
+        printf("child recieved SIGHUP(parent has died)");
+    exit (EXIT_FAILURE);
+}
+
+//------------------------------------------------------------------------
+
 void parent_func (pid_t cpid){
 
 	errno = 0;
@@ -192,10 +210,10 @@ void parent_func (pid_t cpid){
 			}
 
 			errno = 0;
-            int ret = kill(cpid, SIGALRM);
+            int ret = kill(cpid, SIGUSR1);
             if (ret < 0)
             {
-                perror("Bad sigalarm to chld");
+                perror("Bad sig to chld");
                 exit(EXIT_FAILURE);
             }
 
@@ -204,29 +222,31 @@ void parent_func (pid_t cpid){
 		write(1, &buffer, 1);
 	}
 }
+
 //--------------------------------------------------------------------------
+
 void child_func (char *filename)
 {
 
 	pid_t ppid =getppid();
 
-	struct sigaction alarm;
+	struct sigaction pause;
 
 	errno = 0;
-    int ret = sigfillset(&alarm.sa_mask);
+    int ret = sigfillset(&pause.sa_mask);
     if (ret < 0)
     {
-        perror ("sigfillset alarm error");
+        perror ("sigfillset pause error");
         exit (EXIT_FAILURE);
     }
 
-    alarm.sa_flags = 0;
-    alarm.sa_handler = child_handler;
+    pause.sa_flags = 0;
+    pause.sa_handler = child_handler;
 
-	ret = sigaction (SIGALRM, &alarm, NULL);
+	ret = sigaction (SIGUSR1, &pause, NULL);
 	if (ret < 0)
     {
-        perror ("sigaction alarm error");
+        perror ("sigaction pause error");
         exit (EXIT_FAILURE);
     }
 
@@ -240,17 +260,17 @@ void child_func (char *filename)
     ret = sigfillset(&hup.sa_mask);
     if (ret < 0)
     {
-        perror ("sigfillset alarm error");
+        perror ("sigfillset hup error");
         exit (EXIT_FAILURE);
     }
 
     hup.sa_flags = 0;
-    hup.sa_handler = child_handler;
+    hup.sa_handler = child_hup;
 
 	ret = sigaction (SIGHUP, &hup, NULL);
 	if (ret < 0)
     {
-        perror ("sigaction alarm error");
+        perror ("sigaction hup error");
         exit (EXIT_FAILURE);
     }
 
@@ -264,7 +284,7 @@ void child_func (char *filename)
         exit (EXIT_FAILURE);
     }
 
-	ret = sigdelset(&set, SIGALRM);
+	ret = sigdelset(&set, SIGUSR1);
 	if (ret < 0)
     {
         perror ("sigdelset error");
