@@ -21,3 +21,11 @@ void handler (int num);
 void sigchild (int num);
 void child_handler (int num);
 void child_hup (int num);
+
+
+void CheckError(int Expression, char * messege){
+	if (Expression){
+		perror (messege);
+		exit (EXIT_FAILURE);
+	}
+}

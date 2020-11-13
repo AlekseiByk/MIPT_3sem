@@ -18,55 +18,28 @@ int main (int argc, char ** argv)
     sigset_t start_set;
 
     int ret = sigemptyset (&start_set);
-    if (ret < 0)
-    {
-       perror ("make empty start mask error");
-       exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "make empty start mask error");
 
     ret = sigaddset (&start_set, SIGUSR1);
-    if (ret < 0)
-    {
-       perror ("add usr1 start mask error");
-       exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "add usr1 start mask error");
 
     ret = sigaddset (&start_set, SIGUSR2);
-    if (ret < 0)
-    {
-        perror ("add usr2 start mask error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "add usr2 start mask error");
 
     ret = sigaddset (&start_set, SIGCHLD);
-    if (ret < 0)
-    {
-        perror ("add child start mask error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "add chld start mask error");
 
     ret = sigaddset (&start_set, SIGHUP);
-    if (ret < 0)
-    {
-        perror ("add hup start mask error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "add hup start mask error");
 
     errno = 0;
     ret = sigprocmask (SIG_BLOCK, &start_set, NULL);
-    if (ret < 0)
-    {
-        perror ("set start mask error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "set start mask error");
 
 //**********************************************
 
 	pid_t pid = fork ();
-	if (pid < 0){
-		perror ("Bad fork");
-		exit (EXIT_FAILURE);
-	}
+    CheckError(ret < 0, "Bad fork");
 
 	if (pid > 0)
 		// parent
@@ -114,81 +87,46 @@ void parent_func (pid_t cpid){
 	struct sigaction reciever_usr;
 
     int ret = sigfillset (&reciever_usr.sa_mask);
-    if (ret < 0)
-    {
-        perror ("sigfill reciever_usr error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigfill reciever_usr error");
+
 
     reciever_usr.sa_flags = 0;
     reciever_usr.sa_handler = handler;
 
 	ret = sigaction (SIGUSR1, &reciever_usr, NULL);
-	if (ret < 0)
-    {
-        perror ("sigaction SIGUSR1 error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigaction SIGUSR1 error");
 
 	ret = sigaction (SIGUSR2, &reciever_usr, NULL);
-	if (ret < 0)
-    {
-        perror ("sigaction SIGUSR2 error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigaction SIGUSR2 error");
 
 //**********************************************
 
 	struct sigaction child;
 
 	ret = sigfillset (&child.sa_mask);
-	if (ret < 0)
-    {
-        perror ("sigfill child mask error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigfill child mask error");
 
     child.sa_flags = 0;
 	child.sa_handler = sigchild;
 
 	ret = sigaction (SIGCHLD, &child, NULL);
-	if (ret < 0)
-    {
-        perror ("sigaction SIGCHLD error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigaction SIGCHLD error");
 
 //**********************************************
 
 	sigset_t set;
 
 	ret = sigfillset(&set);
-	if (ret < 0)
-    {
-        perror ("sigfill parent set error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigfill parent set error");
 
 	ret = sigdelset(&set, SIGUSR1);
-	if (ret < 0)
-    {
-        perror ("sigdelset error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigdelset error");
 
 	ret = sigdelset(&set, SIGUSR2);
-	if (ret < 0)
-    {
-        perror ("sigdelset error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigdelset error");
 
 	ret = sigdelset(&set, SIGCHLD);
-	if (ret < 0)
-    {
-        perror ("sigdelset error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigdelset error");
 
 //**********************************************
 
@@ -199,11 +137,7 @@ void parent_func (pid_t cpid){
 
 			errno = 0;
 			ret = sigsuspend(&set);
-			if (errno != EINTR)
-		    {
-		        perror ("sigsuspend for usr signals error");
-		        exit (EXIT_FAILURE);
-		    }
+            CheckError(errno != EINTR, "sigsuspend for usr signals error");
 
 			if (transfer_bit){
 				buffer += 1 << i;
@@ -211,15 +145,12 @@ void parent_func (pid_t cpid){
 
 			errno = 0;
             int ret = kill(cpid, SIGUSR1);
-            if (ret < 0)
-            {
-                perror("Bad sig to chld");
-                exit(EXIT_FAILURE);
-            }
+            CheckError(ret < 0, "kill to child error");
 
 		}
 
-		write(1, &buffer, 1);
+		ret = write(1, &buffer, 1);
+        CheckError(ret < 0, "write to stdout error");
 	}
 }
 
@@ -234,21 +165,13 @@ void child_func (char *filename)
 
 	errno = 0;
     int ret = sigfillset(&pause.sa_mask);
-    if (ret < 0)
-    {
-        perror ("sigfillset pause error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigfillset pause error");
 
     pause.sa_flags = 0;
     pause.sa_handler = child_handler;
 
 	ret = sigaction (SIGUSR1, &pause, NULL);
-	if (ret < 0)
-    {
-        perror ("sigaction pause error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigaction pause error");
 
 
 //**********************************************
@@ -258,70 +181,37 @@ void child_func (char *filename)
 
 	errno = 0;
     ret = sigfillset(&hup.sa_mask);
-    if (ret < 0)
-    {
-        perror ("sigfillset hup error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigfillset hup error");
 
     hup.sa_flags = 0;
     hup.sa_handler = child_hup;
 
 	ret = sigaction (SIGHUP, &hup, NULL);
-	if (ret < 0)
-    {
-        perror ("sigaction hup error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigaction hup error");
 
 //**********************************************
 
 	sigset_t set;
 	ret = sigfillset(&set);
-	if (ret < 0)
-    {
-        perror ("child`s sigfillset error error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "child`s sigfillset error error");
 
 	ret = sigdelset(&set, SIGUSR1);
-	if (ret < 0)
-    {
-        perror ("sigdelset error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigdelset error");
 
 	ret = sigdelset(&set, SIGHUP);
-	if (ret < 0)
-    {
-        perror ("sigdelset error");
-        exit (EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "sigdelset error");
 
 //**********************************************
 
-
 	int input = open (filename, O_RDONLY);
-	if (input < 0)
-	{
-		perror ("something wrong with file opening");
-		exit (EXIT_FAILURE);
-	}
+    CheckError(ret < 0, "something wrong with file opening");
 
 //**********************************************
 
     ret = prctl(PR_SET_PDEATHSIG, SIGHUP);
-    if (ret < 0)
-    {
-        perror("Set sig to parent death error");
-        exit(EXIT_FAILURE);
-    }
+    CheckError(ret < 0, "Set sig to parent death error");
 
-    if (old_ppid != getppid())
-    {
-        printf("No parent on start\n");
-        exit(EXIT_FAILURE);
-    }
+    CheckError(old_ppid != getppid(), "No parent on start");
 
 	char buffer = 0;
 
@@ -337,22 +227,14 @@ void child_func (char *filename)
 				ret = kill (ppid, SIGUSR1);
 			else
 				ret = kill (ppid, SIGUSR2);
-			if (ret < 0)
-			{
-			    perror ("bad SIGUSR2 to parent");
-			    exit (EXIT_FAILURE);
-			}
+            CheckError(ret < 0, "bad SIGUSR to parent");
 
 			if (getppid() != ppid)
 				exit (EXIT_FAILURE);
 
 			errno = 0;
 			ret = sigsuspend(&set);
-			if (errno != EINTR)
-		    {
-		        perror ("suspend error");
-		        exit (EXIT_FAILURE);
-		    }
+			CheckError(errno != EINTR, "sigsuspend error");
 		}
 
 	}
