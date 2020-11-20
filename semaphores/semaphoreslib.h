@@ -9,5 +9,13 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 
-const char sem_file_name = "reader";
+const char* sem_file_name = "reader";
+
+void CheckError(int Expression, char * messege){
+	if (Expression){
+		perror (messege);
+		exit (EXIT_FAILURE);
+	}
+}
+
 

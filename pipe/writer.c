@@ -41,6 +41,8 @@ int main (int argc, char **argv)
 	int transfer = open (fifo, O_WRONLY | O_NONBLOCK);
 	CheckError(transfer < 0, "error with transfer fifo open");
 
+	close (service);
+
 	ret = fcntl(transfer, F_SETFL, O_WRONLY);
 	CheckError(ret == -1, "error with fcntl");
 
@@ -56,11 +58,9 @@ int main (int argc, char **argv)
 		CheckError(count <= 0 && errno == EPIPE, "Died transfer fifo");
 		CheckError(count < 0, "write to fifo failure");
 
-		sleep(1);
+		//sleep(1);
 	}
 
-
-	close (service);
 	close (transfer);
 	close (input);
 	free (buffer);
