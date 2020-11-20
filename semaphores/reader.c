@@ -2,6 +2,9 @@
  
 int main() 
 {
+	int ret = open (sem_file_name, IPC_CREAT | 0666);
+	CheckError (ret == -1, "open key file error");
+	
 	key_t semkey = ftok (sem_file_name, 0);
 
 	errno = 0;
@@ -14,7 +17,7 @@ int main()
 	void *buffer = shmat (shmid, NULL, SHM_RDONLY);
 	CheckError (buffer == -1, "Shmat error");
 
-	
+
 
 	int ret = shmdt(buffer);
 	CheckError (ret == -1, "Shmdt error");

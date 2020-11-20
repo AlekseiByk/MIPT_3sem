@@ -1,6 +1,6 @@
 #include "fifolib.h"
 
-int main (int argc, char **argv) 
+int main (int argc, char **argv)
 {
 	if ((argc < 2) || (argc > 2)){
 		printf ("not right program start\n%s <file>\n", argv[0]);
@@ -21,7 +21,7 @@ int main (int argc, char **argv)
 	int ret = mkfifo(fifo_service, 00600);
 	CheckError(ret < 0 && errno != EEXIST, "Creation transfer error(not EEXIST)\n");
 
-    
+
     int service = open (fifo_service, O_RDONLY);
     CheckError(service < 0, "error with transfer fifo open");
 
@@ -31,7 +31,7 @@ int main (int argc, char **argv)
 		printf ("error with fifo name calloc");
 		return 1;
 	}
-	
+
 	if (read (service, fifo, fifo_name_len) != fifo_name_len){
 		perror ("Something wrong with pid transfer\n");
 		exit (EXIT_FAILURE);

@@ -1,6 +1,6 @@
 #include "fifolib.h"
  
-int main() 
+int main()
 {
 	char * buffer = (char *) calloc (buf_size, sizeof (buffer[0]));
 	if (!buffer){
@@ -15,13 +15,12 @@ int main()
     int service = open (fifo_service, O_WRONLY);
     CheckError(service < 0, "open service error");
 
-	
 	pid_t pid = getpid ();
-	
+
 	char * myfifo = make_fifo_name (pid);
 	ret = mkfifo(myfifo, 0600);
 	CheckError(ret == -1, "error with creating transfer fifo");
-	
+
 	int transfer = open(myfifo, O_RDONLY | O_NONBLOCK);
 	CheckError(transfer < 0, "open transfer error");
 
@@ -53,14 +52,14 @@ int main()
 			printf ("select timeout, file descriptor not availible");
 		exit (EXIT_FAILURE);
 	}
-	
+
 //*****************************************
 	int count = -1;
 	errno = 0;
 
 
 	while (count != 0){
-		
+
 		count = read (transfer, buffer, buf_size);
 		CheckError(count == -1, "read from fifo fail");
 
@@ -76,6 +75,6 @@ int main()
 	CheckError(ret == -1, "Remove error");
 
 	free (myfifo);
-	
+
 	return 0;
 }
