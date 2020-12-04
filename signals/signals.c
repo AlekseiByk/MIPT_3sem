@@ -136,7 +136,7 @@ void parent_func (pid_t cpid){
 		for (int i = 0; i < 8; i++){
 
 			errno = 0;
-			ret = sigsuspend(&set);
+			ret = sigsuspend(&set);/* крит секция на трансфер бит
             CheckError(errno != EINTR, "sigsuspend for usr signals error");
 
 			if (transfer_bit){
@@ -144,7 +144,7 @@ void parent_func (pid_t cpid){
 			}
 
 			errno = 0;
-            int ret = kill(cpid, SIGUSR1);
+            int ret = kill(cpid, SIGUSR1);*/ //до сигсаспенда на маску пришедших сигналов
             CheckError(ret < 0, "kill to child error");
 
 		}
@@ -224,7 +224,7 @@ void child_func (char *filename)
 			errno = 0;
 
 			if ((((int)buffer >> i) & 1) == 1)
-				ret = kill (ppid, SIGUSR1);
+				ret = kill (ppid, SIGUSR1);//крит секция на маску пришедших сигналов
 			else
 				ret = kill (ppid, SIGUSR2);
             CheckError(ret < 0, "bad SIGUSR to parent");
@@ -233,7 +233,7 @@ void child_func (char *filename)
 				exit (EXIT_FAILURE);
 
 			errno = 0;
-			ret = sigsuspend(&set);
+			ret = sigsuspend(&set);//***********************************************
 			CheckError(errno != EINTR, "sigsuspend error");
 		}
 
