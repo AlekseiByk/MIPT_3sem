@@ -111,68 +111,15 @@ int child_func (const char * filename, pipes_info* links, int number, int childr
 	CheckError (buff == NULL, "child can't allocate buffer");
 
 	ssize_t ret_read = 0;
-    char* read_end  = buff;
-    char* write_end = buff;
-    char* const end = buff + Chld_buff_size;
-    size_t empty = Chld_buff_size;
-    size_t full = 0;
     do {
+    	
+        ret_read = read(links->from_parent_fd[0], buff, Chld_buff_size);
+        CheckError (ret_read == -1, "read from pipe error(child)");
 
-        if (empty > 0)
-        {
-            errno = 0;
-            ret_read = read(links->from_parent_fd[0], write_end, empty);
-            CheckError (ret_read == -1, "read from pipe error(child)");
-
-            if (write_end + ret_read == end)
-            {
-                write_end = buff;
-                full += ret_read;
-                empty = read_end - write_end;
-            }
-            else
-            {
-                if (write_end >= read_end)
-                {
-                    write_end += ret_read;
-                    empty -= ret_read;
-                    full += ret_read;
-                }
-                else
-                {
-                    write_end += ret_read;
-                    empty -= ret_read;
-                }
-            }
-
-        }
-
-        errno = 0;
-        int ret_write = write(links->to_parent_fd[1], read_end, full);
+        int ret_write = write(links->to_parent_fd[1], buff, ret_read);
         CheckError (ret_write == -1, "write to pipe error(child)");
 
-        if (read_end + ret_write == end)
-        {
-            read_end = buff;
-            full = write_end - read_end;
-            empty += ret_write;
-        }
-        else
-        {
-            if (read_end > write_end)
-            {
-                read_end += ret_write;
-                empty += ret_write;
-                full -= ret_write;
-            }
-            else
-            {
-                read_end += ret_write;
-                full -= ret_write;
-            }
-        }
-
-    } while(full > 0 || ret_read > 0);
+    } while(ret_read > 0);
 
 	close (links->from_parent_fd[RD_PIPE]);
 	close (links->to_parent_fd[WR_PIPE]);
