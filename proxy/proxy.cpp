@@ -188,14 +188,6 @@ int parent_func (pipes_info* links, int children_count, int fd_max)
 
 	for (int i = 0; i < children_count - 1; i++)
 	{
-/*		if (i < num_chld - 6)
-			nodes[i].buff_size = Max_buff_size;
-		else
-		{
-			nodes[i].buff_size = 1000;
-			for(long j = 0; j < (num_chld - 2) - i; j++)
-				nodes[i].buff_size *= 3;
-		}*/
 
 		nodes[i].buff_size = 1024;
 		for (long j = 0; j < children_count - 2 - i; j++)
@@ -323,7 +315,7 @@ int parent_func (pipes_info* links, int children_count, int fd_max)
 	    {
 	        errno  = 0;
 	        int ret = waitpid (links[i].child_pid, NULL, 0);
-	        CheckError (ret == -1, "waitpid error, childs escaped");
+	        CheckError (ret == -1, "waitpid error");
 	    }
 
 	exit (EXIT_SUCCESS);
