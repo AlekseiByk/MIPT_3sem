@@ -1,2 +1,2 @@
 all:
-	gcc -Wall proxy.c -o proxy
+	gcc proxy.cpp -o proxy
