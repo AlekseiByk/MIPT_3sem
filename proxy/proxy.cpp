@@ -112,13 +112,14 @@ int child_func (const char * filename, pipes_info* links, int number, int childr
 
 	ssize_t ret_read = 0;
     do {
-    	
+    	ret_read = splice(links->from_parent_fd[RD_PIPE], NULL, links->to_parent_fd[WR_PIPE], NULL, Chld_buff_size, 0);
+    	/*
         ret_read = read(links->from_parent_fd[0], buff, Chld_buff_size);
         CheckError (ret_read == -1, "read from pipe error(child)");
 
         int ret_write = write(links->to_parent_fd[1], buff, ret_read);
         CheckError (ret_write == -1, "write to pipe error(child)");
-
+		*/
     } while(ret_read > 0);
 
 	close (links->from_parent_fd[RD_PIPE]);
